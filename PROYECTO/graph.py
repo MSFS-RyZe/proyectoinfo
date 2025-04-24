@@ -5,18 +5,6 @@ from segment import *
 class Graph:
     def __init__(self):
         self.segments = []  # Lista de segmentos en el grafo
-        self.nodes = []     # Lista de nodos en el grafo
-
-    def AddNode(self, n):
-        # Añade un nodo al grafo si no existe ya
-        for node in self.nodes:
-            if node == n:
-                return
-        self.nodes.append(n)
-
-class Graph:
-    def __init__(self):
-        self.segments = []  # Lista de segmentos en el grafo
 
     def AddNode(self, n):
         # Añade un nodo al grafo si no existe ya
