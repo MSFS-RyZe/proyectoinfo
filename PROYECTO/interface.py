@@ -1,6 +1,9 @@
 import tkinter as tk
 from tkinter import filedialog, simpledialog, messagebox
 from graph import *
+from test_graph import *
+from path import *
+from test_path import *
 
 class GraphApp:
     def __init__(self, root):
@@ -18,6 +21,8 @@ class GraphApp:
         tk.Button(root, text="Añadir segmento", command=self.add_segment).pack(fill='x')
         tk.Button(root, text="Eliminar nodo", command=self.delete_node).pack(fill='x')
         tk.Button(root, text="Diseñar grafo desde cero", command=self.reset_graph).pack(fill='x')
+        tk.Button(root, text="Ver alcanzables desde nodo", command=self.show_reachability).pack(fill='x')
+        tk.Button(root, text="Camino más corto entre nodos", command=self.show_shortest_path).pack(fill='x')
 
     def load_example(self):
         self.graph = CreateGraph_1()
@@ -71,9 +76,40 @@ class GraphApp:
         self.graph = Graph()
         messagebox.showinfo("Info", "Grafo nuevo creado")
 
+    def show_reachability(self):
+        name = simpledialog.askstring("Alcanzables", "Nombre del nodo de origen:")
+        node = next((n for n in self.graph.nodes if n.name == name), None)
+        if not node:
+            messagebox.showerror("Error", "Nodo no encontrado")
+            return
+
+        reached = set()
+        stack = [node]
+
+        while stack:
+            current = stack.pop()
+            if current not in reached:
+                reached.add(current)
+                stack.extend(n for n in current.neighbors if n not in reached)
+
+        path = Path()
+        for n in reached:
+            AddNodeToPath(path, n)
+
+        PlotPath(self.graph, path)
+
+    def show_shortest_path(self):
+        origin = simpledialog.askstring("Camino mínimo", "Nodo de origen:")
+        destination = simpledialog.askstring("Camino mínimo", "Nodo de destino:")
+        from graph import FindShortestPath
+        path = FindShortestPath(self.graph, origin, destination)
+        if path:
+            PlotPath(self.graph, path)
+        else:
+            messagebox.showinfo("Sin camino", "No existe un camino entre los nodos seleccionados.")
+
 
 if __name__ == '__main__':
     root = tk.Tk()
     app = GraphApp(root)
     root.mainloop()
-
