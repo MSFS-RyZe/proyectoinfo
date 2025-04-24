@@ -166,10 +166,6 @@ def PlotReachability(graph, start_node_name):
             plt.plot([x1, x2], [y1, y2], 'k', alpha=0.3)
 
     plt.title(f"Reachability from {start_node_name}")
-🛣️ 2. PlotPath(graph, path)
-
-Add this to path.py:
-import matplotlib.pyplot as plt
 
 def PlotPath(graph, path):
     # Plot all nodes (light gray)
@@ -192,3 +188,26 @@ def PlotPath(graph, path):
     plt.plot(path.nodes[-1].x, path.nodes[-1].y, 'o', color="green")
 
     plt.title(f"Shortest Path: {path.nodes[0].name} → {path.nodes[-1].name}")
+
+def PlotPath(graph, path):
+    # Plot all nodes (light gray)
+    for node in graph.nodes:
+        plt.plot(node.x, node.y, 'o', color="lightgray")
+        plt.text(node.x + 0.3, node.y + 0.3, node.name)
+
+    # Plot all segments (light gray)
+    for seg in graph.segments:
+        plt.plot([seg.origin.x, seg.destination.x], [seg.origin.y, seg.destination.y], 'k', alpha=0.2)
+
+    # Plot path segments (red)
+    for i in range(len(path.nodes) - 1):
+        n1 = path.nodes[i]
+        n2 = path.nodes[i + 1]
+        plt.plot([n1.x, n2.x], [n1.y, n2.y], 'r', linewidth=2)
+
+    # Highlight start and end
+    plt.plot(path.nodes[0].x, path.nodes[0].y, 'o', color="blue")
+    plt.plot(path.nodes[-1].x, path.nodes[-1].y, 'o', color="green")
+
+    plt.title(f"Shortest Path: {path.nodes[0].name} → {path.nodes[-1].name}")
+
