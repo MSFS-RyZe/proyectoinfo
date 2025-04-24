@@ -135,4 +135,60 @@ def FindShortestPath(graph, origin_name, destination_name):
                 paths.append(new_path)
 
     return None
+import matplotlib.pyplot as plt
 
+def PlotReachability(graph, start_node_name):
+    start_node = next((n for n in graph.nodes if n.name == start_node_name), None)
+    if not start_node:
+        return
+
+    reachable = GetReachableNodes(graph, start_node_name)
+
+    # Plot nodes
+    for node in graph.nodes:
+        color = "gray"
+        if node.name == start_node_name:
+            color = "blue"
+        elif node.name in reachable:
+            color = "green"
+        plt.plot(node.x, node.y, 'o', color=color)
+        plt.text(node.x + 0.3, node.y + 0.3, node.name)
+
+    # Plot segments
+    for seg in graph.segments:
+        x1, y1 = seg.origin.x, seg.origin.y
+        x2, y2 = seg.destination.x, seg.destination.y
+        if seg.origin.name == start_node_name and seg.destination.name in reachable:
+            plt.plot([x1, x2], [y1, y2], 'r')
+            mid_x, mid_y = (x1 + x2) / 2, (y1 + y2) / 2
+            plt.text(mid_x, mid_y, f"{seg.cost:.2f}", fontsize=8)
+        else:
+            plt.plot([x1, x2], [y1, y2], 'k', alpha=0.3)
+
+    plt.title(f"Reachability from {start_node_name}")
+🛣️ 2. PlotPath(graph, path)
+
+Add this to path.py:
+import matplotlib.pyplot as plt
+
+def PlotPath(graph, path):
+    # Plot all nodes (light gray)
+    for node in graph.nodes:
+        plt.plot(node.x, node.y, 'o', color="lightgray")
+        plt.text(node.x + 0.3, node.y + 0.3, node.name)
+
+    # Plot all segments (light gray)
+    for seg in graph.segments:
+        plt.plot([seg.origin.x, seg.destination.x], [seg.origin.y, seg.destination.y], 'k', alpha=0.2)
+
+    # Plot path segments (red)
+    for i in range(len(path.nodes) - 1):
+        n1 = path.nodes[i]
+        n2 = path.nodes[i + 1]
+        plt.plot([n1.x, n2.x], [n1.y, n2.y], 'r', linewidth=2)
+
+    # Highlight start and end
+    plt.plot(path.nodes[0].x, path.nodes[0].y, 'o', color="blue")
+    plt.plot(path.nodes[-1].x, path.nodes[-1].y, 'o', color="green")
+
+    plt.title(f"Shortest Path: {path.nodes[0].name} → {path.nodes[-1].name}")
