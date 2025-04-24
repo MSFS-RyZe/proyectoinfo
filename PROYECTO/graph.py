@@ -1,112 +1,94 @@
 import matplotlib.pyplot as plt
 from node import *
 from segment import *
+import math
+import tkinter as tk
+from tkinter import filedialog
 
 class Graph:
     def __init__(self):
-        self.segments = []  # Lista de segmentos en el grafo
+        self.nodes = []
+        self.segments = []
 
-    def AddNode(self, n):
-        # Añade un nodo al grafo si no existe ya
-        for node in self.nodes:
-            if node.name == n.name:
-                return False  # El nodo ya existe
-            else:
-                self.nodes.append(n)
-                return True
-
-    def AddSegment(self, nameOriginNode, nameDestinationNode):
-        origin = None
-        destination = None
-
-    # Busca los nodos en la lista de nodos
-        for node in self.nodes:
-            if node.name == nameOriginNode:
-                origin = node
-            if node.name == nameDestinationNode:
-                destination = node
-
-    # Si ambos nodos existen, se añade el segmento
-        if origin and destination:
-            # Crea el segmento y añade el nodo destino como vecino
-            segment = Segment(nameOriginNode + '-' + nameDestinationNode, origin, destination)
-            self.segments.append(segment)
-            origin.neighbors.append(destination)
-            return True
+def AddNode(g, n):
+    if n.name in [node.name for node in g.nodes]:
         return False
+    g.nodes.append(n)
+    return True
 
+def AddSegment(g, name, origin_name, dest_name):
+    origin = next((n for n in g.nodes if n.name == origin_name), None)
+    dest = next((n for n in g.nodes if n.name == dest_name), None)
+    if not origin or not dest:
+        return False
+    seg = Segment(name, origin, dest)
+    g.segments.append(seg)
+    AddNeighbor(origin, dest)
+    return True
 
-    def GetClosest(self, g, x, y):
-        closest_node = None
-        closest_distance = float('inf')
-        
-        # Comprobar cada nodo y calcular la distancia euclidiana
+def DeleteNode(g, name):
+    node = next((n for n in g.nodes if n.name == name), None)
+    if not node:
+        return False
+    g.nodes.remove(node)
+    g.segments = [s for s in g.segments if s.origin != node and s.destination != node]
+    for n in g.nodes:
+        if node in n.neighbors:
+            n.neighbors.remove(node)
+    return True
+
+def GetClosest(g, x, y):
+    return min(g.nodes, key=lambda n: math.hypot(n.x - x, n.y - y))
+
+def Plot(g):
+    for node in g.nodes:
+        plt.plot(node.x, node.y, 'o', color='gray')
+        plt.text(node.x + 0.2, node.y + 0.2, node.name)
+    for seg in g.segments:
+        x_vals = [seg.origin.x, seg.destination.x]
+        y_vals = [seg.origin.y, seg.destination.y]
+        plt.plot(x_vals, y_vals, 'black')
+        mid_x = (seg.origin.x + seg.destination.x) / 2
+        mid_y = (seg.origin.y + seg.destination.y) / 2
+        plt.text(mid_x, mid_y, f"{seg.cost:.2f}", color='red')
+    plt.axis('equal')
+    plt.show()
+
+def PlotNode(g, name):
+    node = next((n for n in g.nodes if n.name == name), None)
+    if not node:
+        return False
+    for n in g.nodes:
+        color = 'blue' if n == node else ('green' if n in node.neighbors else 'gray')
+        plt.plot(n.x, n.y, 'o', color=color)
+        plt.text(n.x + 0.2, n.y + 0.2, n.name)
+    for seg in g.segments:
+        if seg.origin == node and seg.destination in node.neighbors:
+            x_vals = [seg.origin.x, seg.destination.x]
+            y_vals = [seg.origin.y, seg.destination.y]
+            plt.plot(x_vals, y_vals, 'red')
+            mid_x = (seg.origin.x + seg.destination.x) / 2
+            mid_y = (seg.origin.y + seg.destination.y) / 2
+            plt.text(mid_x, mid_y, f"{seg.cost:.2f}", color='red')
+    plt.axis('equal')
+    plt.show()
+    return True
+
+def SaveGraph(g, filename):
+    with open(filename, 'w') as f:
         for node in g.nodes:
-            distance = Distance(node, Node("", x, y))
-            if distance < closest_distance:
-                closest_distance = distance
-                closest_node = node
-        
-        return closest_node
+            f.write(f"NODE {node.name} {node.x} {node.y}\n")
+        for seg in g.segments:
+            f.write(f"SEGMENT {seg.name} {seg.origin.name} {seg.destination.name}\n")
 
-    def Plot(self):
-        plt.figure(figsize=(8, 8))
-    
-    # Plot de todos los nodos
-        for node in self.nodes:
-            plt.scatter(node.x, node.y, color='gray')  # Solo grafica el punto
-            plt.text(node.x + 1, node.y + 1, node.name, fontsize=12)  # Muestra el nombre del nodo cerca del punto
-    
-    # Plot de todos los segmentos
-        for segment in self.segments:
-            plt.plot([segment.origin.x, segment.destination.x],
-                    [segment.origin.y, segment.destination.y], 'r')  # Dibuja el segmento
-            mid_x = (segment.origin.x + segment.destination.x) / 2
-            mid_y = (segment.origin.y + segment.destination.y) / 2
-            plt.text(mid_x, mid_y, f"{segment.cost:.2f}", fontsize=12, color='black')  # Muestra el costo del segmento
-    
-        plt.xlabel('X')
-        plt.ylabel('Y')
-        plt.title('Gráfico del Grafo')
-        plt.grid(True)
-        plt.show()
-
-
-    def PlotNode(self, g, nameOrigin):
-        origin = None
-        
-        # Encontrar el nodo origen por su nombre
-        for node in g.nodes:
-            if node.name == nameOrigin:
-                origin = node
-        
-        if origin is None:
-            return False  # Nodo origen no encontrado
-        
-        # Crear el plot
-        plt.figure(figsize=(-1, 8))
-        
-        # Plot de todos los nodos
-        for node in g.nodes:
-            if node == origin:
-                plt.scatter(node.x, node.y, color='blue', label=node.name)
-            elif node in origin.neighbors:
-                plt.scatter(node.x, node.y, color='green', label=node.name)
-            else:
-                plt.scatter(node.x, node.y, color='gray', label=node.name)
-            plt.text(node.x + 1, node.y + 1, node.name, fontsize=12)
-        
-        # Plot de los segmentos desde el nodo origen
-        for neighbor in origin.neighbors:
-            plt.plot([origin.x, neighbor.x], [origin.y, neighbor.y], 'r')
-            mid_x = (origin.x + neighbor.x) / 2
-            mid_y = (origin.y + neighbor.y) / 2
-            plt.text(mid_x, mid_y, f"{Distance(origin, neighbor):.2f}", fontsize=12, color='black')
-        
-        plt.xlabel('X')
-        plt.ylabel('Y')
-        plt.title(f'Gráfico del Nodo {origin.name} y sus Vecinos')
-        plt.grid(True)
-        plt.show()
-        
-        return True
+def LoadGraph(filename):
+    g = Graph()
+    with open(filename, 'r') as f:
+        lines = f.readlines()
+        for line in lines:
+            parts = line.strip().split()
+            if parts[0] == 'NODE':
+                AddNode(g, Node(parts[1], float(parts[2]), float(parts[3])))
+            elif parts[0] == 'SEGMENT':
+                AddSegment(g, parts[1], parts[2], parts[3])
+    return g
