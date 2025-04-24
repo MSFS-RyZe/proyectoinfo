@@ -92,3 +92,15 @@ def LoadGraph(filename):
             elif parts[0] == 'SEGMENT':
                 AddSegment(g, parts[1], parts[2], parts[3])
     return g
+
+def GetReachableNodes(graph, start_name):
+    visited = set()
+    to_visit = [start_name]
+    while to_visit:
+        current = to_visit.pop()
+        if current not in visited:
+            visited.add(current)
+            node = next((n for n in graph.nodes if n.name == current), None)
+            if node:
+                to_visit.extend([n.name for n in node.neighbors])
+    return visited
