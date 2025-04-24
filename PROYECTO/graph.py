@@ -104,3 +104,35 @@ def GetReachableNodes(graph, start_name):
             if node:
                 to_visit.extend([n.name for n in node.neighbors])
     return visited
+
+def FindShortestPath(graph, origin_name, destination_name):
+    origin = next(n for n in graph.nodes if n.name == origin_name)
+    destination = next(n for n in graph.nodes if n.name == destination_name)
+
+    paths = [Path([origin])]
+    visited = set()
+
+    while paths:
+        paths.sort(key=lambda p: p.EstimatedTotalCost(destination))
+        current_path = paths.pop(0)
+        current_node = current_path.LastNode()
+
+        if current_node.name == destination_name:
+            return current_path
+
+        if current_node.name in visited:
+            continue
+        visited.add(current_node.name)
+
+        for neighbor in current_node.neighbors:
+            if current_path.ContainsNode(neighbor):
+                continue
+            segment = next((s for s in graph.segments if s.origin.name == current_node.name and s.destination.name == neighbor.name), None)
+            if segment:
+                new_path = Path(current_path.nodes[:])
+                new_path.real_cost = current_path.real_cost
+                new_path.AddNode(neighbor, segment.cost)
+                paths.append(new_path)
+
+    return None
+
