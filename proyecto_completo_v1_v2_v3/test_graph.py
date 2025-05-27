@@ -40,12 +40,3 @@ def CreateGraph_1():
     AddSegment(G, "LK","L","K")
     AddSegment(G, "LF","L","F")
     return G
-
-print("Probando el grafo...")
-G = CreateGraph_1()
-Plot(G)
-PlotNode(G, "C")
-n = GetClosest(G,15,5)
-print(n.name)
-n = GetClosest(G,8,19)
-print(n.name)
