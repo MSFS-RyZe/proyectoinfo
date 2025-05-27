@@ -30,11 +30,12 @@ class AirSpace:
 
     def load_airports(self, filename):
         print(f"Cargando aeropuertos desde: {filename}")
+        
         with open(filename, 'r') as f:
             lines = f.readlines()
         
         current_airport = None
-        airport_counter = 90000  # IDs altos para aeropuertos
+        airport_counter = 1  # Contador simple para IDs
         
         for line in lines:
             line = line.strip()
@@ -44,7 +45,16 @@ class AirSpace:
             # Si es un código ICAO de aeropuerto (4 letras que empiezan por L)
             if len(line) == 4 and line.startswith('L'):
                 current_airport = line
-                airport_id = airport_counter
+                
+                # Buscar un NavPoint que pueda estar relacionado con este aeropuerto
+                # Usar el primer NavPoint disponible como referencia
+                if self.navPoints:
+                    # Usar el ID del primer NavPoint como base + contador
+                    first_nav_id = list(self.navPoints.keys())[0]
+                    airport_id = first_nav_id + airport_counter * 10000
+                else:
+                    airport_id = airport_counter
+                
                 self.airports[airport_id] = NavAirport(current_airport)
                 airport_counter += 1
                 print(f"Aeropuerto creado: {current_airport} con ID {airport_id}")
@@ -101,13 +111,17 @@ def PlotAirSpace(airspace):
         plt.plot(navpoint.longitude, navpoint.latitude, 'o', color='blue', markersize=3)
         plt.text(navpoint.longitude + 0.02, navpoint.latitude + 0.02, navpoint.name, fontsize=6)
 
-    # Dibujar aeropuertos
+    # Dibujar aeropuertos usando una estrategia diferente
     for airport_id, airport in airspace.airports.items():
-        if airport_id in airspace.navPoints:
-            nav_point = airspace.navPoints[airport_id]
-            plt.plot(nav_point.longitude, nav_point.latitude, 's', color='red', markersize=8)
-            plt.text(nav_point.longitude + 0.02, nav_point.latitude + 0.02, 
-                    airport.name, fontsize=8, fontweight='bold', color='red')
+        # Buscar NavPoints que contengan el código del aeropuerto
+        airport_code = airport.name[:3]  # Primeras 3 letras del código ICAO
+        
+        for nav_id, nav_point in airspace.navPoints.items():
+            if airport_code in nav_point.name or nav_point.name.startswith(airport_code):
+                plt.plot(nav_point.longitude, nav_point.latitude, 's', color='red', markersize=8)
+                plt.text(nav_point.longitude + 0.02, nav_point.latitude + 0.02, 
+                        airport.name, fontsize=8, fontweight='bold', color='red')
+                break  # Solo mostrar el primer match
 
     # Dibujar segmentos
     for segment in airspace.segments:
