@@ -194,7 +194,7 @@ class GraphApp:
         boton_sorpresa.pack(side='bottom', fill='x', padx=10, pady=10)
         funcionalidades = tk.Button(
                 self.left_frame,
-                text="funcioalidades extra",
+                text="funcionalidades extra",
                 command=funcionalidad,
                 font=('Arial', 10, 'bold'),
                 bg="#ffde59",  
