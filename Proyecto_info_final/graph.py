@@ -221,6 +221,10 @@ Este programa ofrece las siguientes funcionalidades:
 2. Un enlace a un video de YouTube que te hará reír
 3. Una foto sorpresa que se mostrará después de ver el video
 4. Una canción de fondo para acompañar la experiencia
+5. Destacar los aeropuertos con simbolos de avión
+6. Personalización del google earth para solamente ver aeropuertos y rutas deseadas
+8. Una interfaz gráfica amigable y fácil de usar
+9. Posibilidad de guardar y cargar grafos para continuar trabajando en ellos
 
 ¡Explora todas las opciones del menú para descubrir lo que puedes hacer!
 """)
